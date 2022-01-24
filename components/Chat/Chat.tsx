@@ -1,15 +1,17 @@
-import { SocketContext } from "@lib/context";
+import { SocketContext, UserContext } from "@lib/context";
+import { Message } from "@types";
 import { useContext, useEffect, useState } from "react";
 import styles from "./Chat.module.scss";
 export interface ChatProps {}
 
 export const Chat = ({}: ChatProps) => {
   const { socket, setSocket } = useContext(SocketContext);
+  const { user, setUser } = useContext(UserContext);
   const [message, setMessage] = useState("");
-  const [chat, setChat] = useState<string[]>([]);
+  const [chat, setChat] = useState<Message[]>([]);
 
   useEffect(() => {
-    if (socket) {
+    if (user && socket) {
       socket.on("message", (msg) => {
         const newChat = [...chat, msg];
         setChat(newChat);
@@ -23,7 +25,7 @@ export const Chat = ({}: ChatProps) => {
       new FormData(event.target as HTMLFormElement)
     );
     if (socket) {
-      socket.emit("message", message);
+      socket.emit("message", { user, message });
       setMessage("");
     }
   };

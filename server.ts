@@ -9,6 +9,8 @@ const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
+let users = {};
+
 app.prepare().then(() => {
   const expressApp = express();
 
@@ -23,8 +25,15 @@ app.prepare().then(() => {
   const io = require("socket.io")(httpServer);
 
   io.on("connection", (socket: Socket) => {
-    socket.on("message", (msg) => {
-      io.emit("message", `${socket.id}: ${msg}`);
+    socket.on("register", (name) => {
+      socket.emit(name);
+      users = { ...users, [name]: name };
+      console.log(users);
+    });
+
+    socket.on("message", (payload) => {
+      console.log(payload);
+      io.emit("message", `${payload.user.name}: ${payload.message}`);
       // socket.broadcast.emit("message", `${socket.id}: ${msg}`);
     });
   });

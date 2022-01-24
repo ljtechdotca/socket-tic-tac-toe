@@ -1,17 +1,16 @@
-import { Chat } from "@components";
-import { SocketContext } from "@lib/context";
+import { Chat, Register } from "@components";
+import { SocketContext, UserContext } from "@lib/context";
 import styles from "@styles/Home.module.scss";
 import type { NextPage } from "next";
 import React, { useContext } from "react";
 
 const Home: NextPage = () => {
   const { socket, setSocket } = useContext(SocketContext);
+  const { user, setUser } = useContext(UserContext);
 
   return (
     <div className={styles.root}>
-      <div className={styles.container}>
-        <Chat />
-      </div>
+      <div className={styles.container}>{user ? <Chat /> : <Register />}</div>
     </div>
   );
 };

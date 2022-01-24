@@ -1,6 +1,6 @@
-import { Chat, Meta } from "@components";
+import { Meta } from "@components";
 import { INIT_CON_OPTS } from "@lib/constants";
-import { SocketContext } from "@lib/context";
+import { SocketContext, UserContext } from "@lib/context";
 import { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import styles from "./Layout.module.scss";
@@ -17,6 +17,7 @@ export interface LayoutProps {
 
 export const Layout = ({ children }: LayoutProps) => {
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     let newSocket: Socket;
@@ -40,12 +41,12 @@ export const Layout = ({ children }: LayoutProps) => {
 
   return (
     <SocketContext.Provider value={{ socket, setSocket }}>
-      <div className={styles.root}>
-        <Meta />
-        <div className={styles.container}>
-          {children}
+      <UserContext.Provider value={{ user, setUser }}>
+        <div className={styles.root}>
+          <Meta />
+          <div className={styles.container}>{children}</div>
         </div>
-      </div>
+      </UserContext.Provider>
     </SocketContext.Provider>
   );
 };
