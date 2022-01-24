@@ -1,5 +1,10 @@
+import { User } from "@types";
 import { NextApiRequest, NextApiResponse } from "next";
 import { Socket } from "socket.io";
+
+const createUser = (name: string, socket: Socket) => {
+  return { name, id: socket.id } as User;
+};
 
 const express = require("express");
 const next = require("next");
@@ -9,7 +14,11 @@ const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
-let users = {};
+let users: User[] = [];
+
+const rooms: Record<string, User[]> = {
+  vip: [],
+};
 
 app.prepare().then(() => {
   const expressApp = express();
@@ -25,16 +34,19 @@ app.prepare().then(() => {
   const io = require("socket.io")(httpServer);
 
   io.on("connection", (socket: Socket) => {
-    socket.on("register", (name) => {
-      socket.emit(name);
-      users = { ...users, [name]: name };
-      console.log(users);
+    socket.on("register", (data) => {
+      const user = createUser(data.name, socket);
+      users.push(user);
+      socket.emit("register", user);
     });
 
-    socket.on("message", (payload) => {
-      console.log(payload);
-      io.emit("message", `${payload.user.name}: ${payload.message}`);
-      // socket.broadcast.emit("message", `${socket.id}: ${msg}`);
+    socket.on("join", (data: { room: string; name: string }) => {
+      rooms[data.room].push(createUser(data.name, socket));
+    });
+
+    socket.on("message", (data) => {
+      console.log(data);
+      io.emit("message", `${data.user.name}: ${data.message}`);
     });
   });
 });

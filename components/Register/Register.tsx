@@ -1,4 +1,5 @@
 import { SocketContext, UserContext } from "@lib/context";
+import { User } from "@types";
 import React, { useContext } from "react";
 import styles from "./Register.module.scss";
 export interface RegisterProps {}
@@ -9,12 +10,14 @@ export const Register = ({}: RegisterProps) => {
 
   const handle = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const { user } = Object.fromEntries(
+    const { name } = Object.fromEntries(
       new FormData(event.target as HTMLFormElement)
     );
     if (socket) {
-      socket.emit("register", user);
-      setUser((state) => ({ ...state, name: user }));
+      socket.emit("register", { name: name });
+      socket.on("register", (data: User) => {
+        setUser(data);
+      });
     }
   };
 
@@ -24,8 +27,8 @@ export const Register = ({}: RegisterProps) => {
         <form onSubmit={handle} className={styles.form}>
           <input
             className={styles.input}
-            id="user"
-            name="user"
+            id="name"
+            name="name"
             type="text"
             placeholder="user name"
           />
