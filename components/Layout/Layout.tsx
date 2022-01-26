@@ -1,6 +1,7 @@
 import { Meta } from "@components";
 import { INIT_CON_OPTS } from "@lib/constants";
 import { SocketContext, UserContext } from "@lib/context";
+import { User } from "@types";
 import { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import styles from "./Layout.module.scss";
@@ -25,9 +26,6 @@ export const Layout = ({ children }: LayoutProps) => {
 
     if (location) {
       newSocket = io("http://localhost:3000", INIT_CON_OPTS);
-      newSocket.on("connect", () => {
-        console.log("🐱 Hello World!");
-      });
 
       setSocket(newSocket);
 

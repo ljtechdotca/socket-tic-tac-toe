@@ -3,5 +3,14 @@
 }
 
 .container {
+  padding: 3rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.contents {
   display: grid;
+  row-gap: 1rem;
 }

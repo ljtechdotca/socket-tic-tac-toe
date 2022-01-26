@@ -1,0 +1,49 @@
+@use "@styles/includes/button" as button;
+
+.root {
+  display: grid;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  row-gap: 0.5rem;
+  list-style-type: none;
+}
+
+.term {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.room {
+  display: flex;
+  flex-direction: column;
+  row-gap: 0.5rem;
+}
+
+.details {
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  row-gap: 0.5rem;
+  list-style-type: none;
+}
+
+.user {
+  color: var(--background);
+  background-color: var(--blue);
+  border-radius: 0.25rem;
+  padding: 0.5rem 1rem;
+}
+
+.button {
+  @include button.default;
+  &__red {
+    @include button.red;
+  }
+}

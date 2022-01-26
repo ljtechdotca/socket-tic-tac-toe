@@ -1,0 +1,12 @@
+.root {
+  display: grid;
+}
+
+.container {
+  height: 10rem;
+  place-items: center center;
+  width: 10rem;
+  background-color: black;
+  color: white;
+  display: grid;
+}

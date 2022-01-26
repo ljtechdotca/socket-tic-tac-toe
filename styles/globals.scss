@@ -1,6 +1,15 @@
 :root {
+  --accent-1: #fafafa;
+  --accent-2: #f8f8f8;
+  --accent-3: #e8e8e8;
+  --accent-4: #d8d8d8;
+  --accent-5: #444444;
+  --accent-6: #222222;
   --background: #ffffff;
+  --foreground: #000000;
+  --blue: #415cf6;
   --purple: #7b61ff;
+  --red: #fa3232;
 }
 
 a {
@@ -8,8 +17,36 @@ a {
   text-decoration: none;
 }
 
+body {
+  background-color: var(--accent-2);
+}
+
 button {
   cursor: pointer;
+}
+
+input {
+  background-color: var(--background);
+  padding: 0.5rem 1rem;
+  width: 100%;
+  border: 2px solid transparent;
+  border-radius: 0.25rem;
+}
+
+::-webkit-input-placeholder {
+  color: var(--accent-4);
+}
+
+::-moz-placeholder {
+  color: var(--accent-4);
+}
+
+::-ms-placeholder {
+  color: var(--accent-4);
+}
+
+::placeholder {
+  color: var(--accent-4);
 }
 
 * {

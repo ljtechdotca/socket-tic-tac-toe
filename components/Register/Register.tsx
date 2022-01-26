@@ -14,9 +14,9 @@ export const Register = ({}: RegisterProps) => {
       new FormData(event.target as HTMLFormElement)
     );
     if (socket) {
-      socket.emit("register", { name: name });
-      socket.on("register", (data: User) => {
-        setUser(data);
+      socket.emit("register", name);
+      socket.on("register", (user: User) => {
+        setUser(user);
       });
     }
   };
@@ -25,14 +25,8 @@ export const Register = ({}: RegisterProps) => {
     <div className={styles.root}>
       <div className={styles.container}>
         <form onSubmit={handle} className={styles.form}>
-          <input
-            className={styles.input}
-            id="name"
-            name="name"
-            type="text"
-            placeholder="user name"
-          />
-          <button className={styles.input}>Register</button>
+          <input id="name" name="name" type="text" placeholder="user name" />
+          <button className={styles.button}>Register</button>
         </form>
       </div>
     </div>
