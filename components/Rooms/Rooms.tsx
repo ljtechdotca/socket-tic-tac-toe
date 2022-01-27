@@ -16,10 +16,8 @@ export const Rooms = ({ user }: RoomsProps) => {
   useEffect(() => {
     if (socket) {
       socket.on("rooms", (rooms) => {
-        const newRooms = Object.entries(rooms).map(
-          ([key, value]: [string, any]) => ({ ...value } as IRoom)
-        );
-        setRooms(newRooms);
+        console.log("🤡", rooms);
+        setRooms(rooms);
       });
       socket.on("error", (error) => {
         setError(error);
@@ -33,17 +31,9 @@ export const Rooms = ({ user }: RoomsProps) => {
       switch (type) {
         case "join":
           socket.emit("join", room, user);
-
-          socket.on("join", (rooms) => {
-            setRooms(rooms);
-          });
           break;
         case "leave":
-          socket.emit("leave", user);
-
-          socket.on("leave", (rooms) => {
-            setRooms(rooms);
-          });
+          socket.emit("leave", room, user);
           break;
       }
     }
@@ -53,35 +43,36 @@ export const Rooms = ({ user }: RoomsProps) => {
     <div className={styles.root}>
       {error && error}
       <dl className={styles.container}>
-        {rooms.map(({ name, users }) => (
-          <div key={name} className={styles.room}>
-            <dt className={styles.term}>
-              <button
-                className={styles.button}
-                onClick={() => handler("join", { room: { name, users }, user })}
-              >
-                {name} <b>{users.length}</b>
-              </button>
-              {name === user.room && (
+        {socket &&
+          rooms.map(({ id, users }) => (
+            <div key={id} className={styles.room}>
+              <dt className={styles.term}>
                 <button
-                  className={styles.button__red}
-                  onClick={() => handler("leave", { user })}
+                  className={styles.button}
+                  onClick={() => handler("join", { room: id, user })}
                 >
-                  Leave
+                  {id}
                 </button>
-              )}
-            </dt>
-            <dd className={styles.details}>
-              <ul className={styles.list}>
-                {users.map(({ id, name }) => (
-                  <li key={id} className={styles.user}>
-                    {name}
-                  </li>
-                ))}
-              </ul>
-            </dd>
-          </div>
-        ))}
+                {users.some(({ id }) => id === user.id) && (
+                  <button
+                    className={styles.button__red}
+                    onClick={() => handler("leave", { room: id, user })}
+                  >
+                    Leave
+                  </button>
+                )}
+              </dt>
+              <dd className={styles.details}>
+                <ul className={styles.list}>
+                  {users.map(({ id, name }) => (
+                    <li key={id} className={styles.user}>
+                      {name}
+                    </li>
+                  ))}
+                </ul>
+              </dd>
+            </div>
+          ))}
       </dl>
     </div>
   );

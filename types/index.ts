@@ -1,7 +1,6 @@
 export interface IUser {
   id: string;
   name: string;
-  room: string;
 }
 
 export interface IMessage {
@@ -10,8 +9,9 @@ export interface IMessage {
 }
 
 export interface IRoom {
-  name: string;
+  id: string;
   users: IUser[];
+  game: IGame;
 }
 
 export interface ICell {
@@ -20,7 +20,6 @@ export interface ICell {
 }
 
 export interface IGame {
-  id: string;
   board: ICell[];
   turn: number;
 }

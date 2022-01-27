@@ -12,9 +12,11 @@ export const Game = ({}: GameProps) => {
 
   useEffect(() => {
     if (socket && user) {
-      socket.on("ready", (game: IGame) => {
-        console.log("ready 🎃", game);
+      socket.on("start game", (game: IGame) => {
         console.log(`Is ${user.name} ready?`);
+        setGame(game);
+      });
+      socket.on("stop game", (game: null) => {
         setGame(game);
       });
     }
@@ -36,19 +38,19 @@ export const Game = ({}: GameProps) => {
 
   return (
     <div className={styles.root}>
-      <div className={styles.container}>
-        {game
-          ? game.board.map(({ id, value }: ICell) => (
-              <button
-                className={styles.cell}
-                key={id}
-                onClick={() => handle({ id, value })}
-              >
-                {value}
-              </button>
-            ))
-          : "WAITING FOR PLAYERS"}
-      </div>
+      {game && (
+        <div className={styles.container}>
+          {game.board.map(({ id, value }: ICell) => (
+            <button
+              className={styles.cell}
+              key={id}
+              onClick={() => handle({ id, value })}
+            >
+              {value}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

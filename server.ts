@@ -1,4 +1,4 @@
-import { ICell, IGame, IRoom, IUser } from "@types";
+import { ICell, IRoom, IUser } from "@types";
 import { NextApiRequest, NextApiResponse } from "next";
 import { Socket } from "socket.io";
 
@@ -18,47 +18,50 @@ const INIT_BOARD: ICell[] = Array.from({ length: 9 }, (_, index) => {
   };
 });
 
-let games: Record<string, IGame> = {
-  alpha: {
+let rooms: IRoom[] = [
+  {
+    id: "public",
+    users: [],
+    game: {
+      board: [...INIT_BOARD],
+      turn: 0,
+    },
+  },
+  {
     id: "alpha",
-    board: INIT_BOARD,
-    turn: 0,
+    users: [],
+    game: {
+      board: [...INIT_BOARD],
+      turn: 0,
+    },
   },
-  beta: {
+  {
     id: "beta",
-    board: INIT_BOARD,
-    turn: 0,
+    users: [],
+    game: {
+      board: [...INIT_BOARD],
+      turn: 0,
+    },
   },
-  cat: {
-    id: "cat",
-    board: INIT_BOARD,
-    turn: 0,
-  },
+];
+
+const createUser = (name: string, socket: Socket) => {
+  return { id: socket.id, name } as IUser;
 };
 
-// let rooms: Record<string, IRoom> = {
-//   alpha: {
-//     name: "Alpha",
-//     users: [],
-//   },
-//   beta: {
-//     name: "Beta",
-//     users: [],
-//   },
-//   cat: {
-//     name: "Cat",
-//     users: [],
-//   },
-// };
-
-const createUser = (name: string, socket: Socket, room: string) => {
-  return { id: socket.id, name, room } as IUser;
+const joinRoom = (room: string, socket: Socket, user: IUser) => {
+  socket.join(room);
+  const targetRoomIndex = rooms.findIndex(({ id }) => id === room);
+  rooms[targetRoomIndex].users.push(user);
 };
 
-// const leaveRoom = (user: IUser) => {
-//   const key = user.room.toLocaleLowerCase();
-//   rooms[key].users = rooms[key].users.filter(({ id }) => id !== user.id);
-// };
+const leaveRoom = (room: string, socket: Socket, user: IUser) => {
+  socket.leave(room);
+  const targetRoomIndex = rooms.findIndex(({ id }) => id === room);
+  rooms[targetRoomIndex].users = rooms[targetRoomIndex].users.filter(
+    ({ id }) => id !== user.id
+  );
+};
 
 app.prepare().then(() => {
   const expressApp = express();
@@ -79,85 +82,51 @@ app.prepare().then(() => {
   const io = require("socket.io")(httpServer);
 
   io.on("connection", (socket: Socket) => {
-    // io.emit("rooms", rooms);
-    io.emit("users", users);
-
     // new user register
-    socket.on("register", (name) => {
-      const user = createUser(name, socket, "");
-      users.push(user);
+    socket.on("register", async (name: string) => {
+      const user = createUser(name, socket);
+      joinRoom("public", socket, user);
+
       socket.emit("register", user);
-      socket.join("public");
-      // io.emit("rooms", rooms);
-      io.emit("users", users);
+      io.to("public").emit("users", users);
+      io.to("public").emit("rooms", rooms);
     });
-
-    // join rooms
-    socket.on("join", (room: IRoom, user: IUser) => {
-      const key = room.name.toLocaleLowerCase();
-
-      // if the user is already in the room, return an error
-      if (room.name === user.room) {
-        socket.emit("error", "You are already in this room!");
-        return;
+    // handle rooms
+    socket.on("join", async (room: string, user: IUser) => {
+      const targetRoomIndex = rooms.findIndex(({ id }) => id === room);
+      if (rooms[targetRoomIndex].users.length < 2) {
+        joinRoom(room, socket, user);
+        io.emit("users", users);
+        io.emit("rooms", rooms);
+        if (rooms[targetRoomIndex].users.length === 2) {
+          const players = await io.in(rooms[targetRoomIndex].id).fetchSockets();
+          players.forEach((socket: Socket) => {
+            socket.emit("start game", rooms[targetRoomIndex].game);
+          });
+        }
+      } else {
+        socket.emit("error", "This room is full!");
       }
-
-      // // if the selected room is full, return an error
-      // if (rooms[key].users.length >= 2) {
-      //   socket.emit("error", "Room is full!");
-      //   return;
-      // }
-
-      // // if user exists in a previous room, clear them out
-      // if (user.room.length > 0) {
-      //   leaveRoom(user);
-      // }
-
-      // rooms[key].users.push(user);
-      // const total = rooms[key].users.length;
-      const userIndex = users.findIndex(({ id }) => id === user.id);
-      // users[userIndex] = createUser(user.name, socket, rooms[key].name);
-
-      // update rooms and users state
-      socket.emit("register", users[userIndex]);
-      // io.emit("rooms", rooms);
-      io.emit("users", users);
-      // if (total === 2) {
-      //   rooms[key].users.forEach(({ id }) => {
-      //     if (id === socket.id) {
-      //       // io.socket
-      //       socket.emit("ready", games[key]);
-      //     }
-      //   });
-      // }
     });
-
-    // leave room
-    socket.on("leave", (user: IUser) => {
-      // leaveRoom(user);
-
-      const userIndex = users.findIndex(({ id }) => id === user.id);
-      users[userIndex] = createUser(user.name, socket, "");
-
-      socket.emit("register", users[userIndex]);
-      // io.emit("rooms", rooms);
-      // io.emit("users", users);
+    socket.on("leave", async (room: string, user: IUser) => {
+      const targetRoomIndex = rooms.findIndex(({ id }) => id === room);
+      if (room !== "public") {
+        const players = await io.in(rooms[targetRoomIndex].id).fetchSockets();
+        players.forEach((socket: Socket) => {
+          socket.emit("stop game", null);
+        });
+        leaveRoom(room, socket, user);
+        io.emit("users", users);
+        io.emit("rooms", rooms);
+      } else {
+        socket.emit("error", "Cannot leave public room.");
+      }
     });
-
     // messages
     socket.on("message", (message: string, user: IUser) => {
       io.emit("message", `${user.name}: ${message}`);
     });
-
     // game
-    socket.on("cell", (cell: ICell, user: IUser) => {
-      const key = user.room.toLocaleLowerCase();
-      games[key].board[cell.id].value = "x";
-      // rooms[key].users.forEach(({ id }) => {
-      //   if (id === socket.id) {
-      //     socket.emit("games", games[key]);
-      //   }
-      // });
-    });
+    socket.on("cell", (cell: ICell, user: IUser) => {});
   });
 });

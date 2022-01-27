@@ -12,7 +12,7 @@ const Home: NextPage = () => {
     <div className={styles.root}>
       {user ? (
         <div className={styles.container}>
-          {user.room.length > 0 && <Game />}
+          <Game />
           <div className={styles.contents}>
             <Chat user={user} />
             <Rooms user={user} />
