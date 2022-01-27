@@ -3,10 +3,18 @@
 }
 
 .container {
-  height: 10rem;
+  height: 12rem;
   place-items: center center;
-  width: 10rem;
+  width: 12rem;
   background-color: black;
   color: white;
   display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.cell {
+  width: 3rem;
+  height: 3rem;
+  display: grid;
+  place-items: center center;
 }

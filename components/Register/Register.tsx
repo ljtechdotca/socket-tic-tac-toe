@@ -1,5 +1,5 @@
 import { SocketContext, UserContext } from "@lib/context";
-import { User } from "@types";
+import { IUser } from "@types";
 import React, { useContext } from "react";
 import styles from "./Register.module.scss";
 export interface RegisterProps {}
@@ -15,7 +15,7 @@ export const Register = ({}: RegisterProps) => {
     );
     if (socket) {
       socket.emit("register", name);
-      socket.on("register", (user: User) => {
+      socket.on("register", (user: IUser) => {
         setUser(user);
       });
     }

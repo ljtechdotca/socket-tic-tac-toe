@@ -1,23 +1,23 @@
 import { SocketContext } from "@lib/context";
-import { Room, User } from "@types";
+import { IRoom, IUser } from "@types";
 import React, { useContext, useEffect, useState } from "react";
 import styles from "./Rooms.module.scss";
 
 export interface RoomsProps {
-  user: User;
+  user: IUser;
 }
 
 export const Rooms = ({ user }: RoomsProps) => {
   const { socket, setSocket } = useContext(SocketContext);
 
-  const [rooms, setRooms] = useState<Room[]>([]);
+  const [rooms, setRooms] = useState<IRoom[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (socket) {
       socket.on("rooms", (rooms) => {
         const newRooms = Object.entries(rooms).map(
-          ([key, value]: [string, any]) => ({ ...value } as Room)
+          ([key, value]: [string, any]) => ({ ...value } as IRoom)
         );
         setRooms(newRooms);
       });

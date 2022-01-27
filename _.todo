@@ -1,7 +1,4 @@
-✔ fix styles @done(22-01-25 22:49)
+☐ make rooms for broadcasting
 
-✔ limit rooms to two sockets @done(22-01-25 22:58)
-
-✘ create another room if the others are full @cancelled(22-01-25 23:17)
-
-☐ initialize the game when two players are ready
+☐ build a tic tac toe board
+  - players take turns selecting a grid cell

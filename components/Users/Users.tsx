@@ -1,5 +1,5 @@
 import { SocketContext, UserContext } from "@lib/context";
-import { User } from "@types";
+import { IUser } from "@types";
 import { useContext, useEffect, useState } from "react";
 import styles from "./Users.module.scss";
 
@@ -7,7 +7,7 @@ export interface UsersProps {}
 
 export const Users = ({}: UsersProps) => {
   const { socket, setSocket } = useContext(SocketContext);
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<IUser[]>([]);
 
   useEffect(() => {
     if (socket) {

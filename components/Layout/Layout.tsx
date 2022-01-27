@@ -1,7 +1,7 @@
 import { Meta } from "@components";
 import { INIT_CON_OPTS } from "@lib/constants";
 import { SocketContext, UserContext } from "@lib/context";
-import { User } from "@types";
+import { IUser } from "@types";
 import { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import styles from "./Layout.module.scss";
@@ -18,7 +18,7 @@ export interface LayoutProps {
 
 export const Layout = ({ children }: LayoutProps) => {
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<IUser | null>(null);
 
   useEffect(() => {
     let newSocket: Socket;

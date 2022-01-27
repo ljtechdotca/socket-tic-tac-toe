@@ -1,7 +1,7 @@
-import { User } from "@types";
+import { IUser } from "@types";
 import { createContext, Dispatch } from "react";
 
 export const UserContext = createContext<{
-  user: User | null;
-  setUser: Dispatch<User>;
+  user: IUser | null;
+  setUser: Dispatch<IUser>;
 }>({ user: null, setUser: () => {} });
