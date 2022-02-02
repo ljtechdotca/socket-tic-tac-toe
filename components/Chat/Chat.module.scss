@@ -1,12 +1,14 @@
 @use "@styles/includes/button" as button;
 
 .root {
-  background-color: var(--background);
   display: grid;
-  row-gap: 1rem;
+  row-gap: 0.5rem;
 }
 
 .container {
+  padding: 1rem;
+  background-color: var(--background);
+  border-radius: 0.25rem;
   display: flex;
   flex-direction: column;
   row-gap: 0.5rem;
@@ -24,4 +26,7 @@
 }
 
 .message {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 0.25rem;
 }

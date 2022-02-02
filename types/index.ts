@@ -1,9 +1,10 @@
 export interface IUser {
   id: string;
+  color: string;
   name: string;
 }
 
-export interface IMessage {
+export interface IChat {
   user: IUser;
   message: string;
 }
@@ -15,11 +16,12 @@ export interface IRoom {
 }
 
 export interface ICell {
-  id: number;
+  x: number;
+  y: number;
   value: string;
 }
 
 export interface IGame {
-  board: ICell[];
+  board: ICell[][];
   turn: number;
 }

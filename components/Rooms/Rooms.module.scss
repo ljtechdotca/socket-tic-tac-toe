@@ -35,8 +35,7 @@
 }
 
 .user {
-  color: var(--background);
-  background-color: var(--blue);
+  border: 1px solid var(--accent-4);
   border-radius: 0.25rem;
   padding: 0.5rem 1rem;
 }

@@ -28,9 +28,22 @@ button {
 input {
   background-color: var(--background);
   padding: 0.5rem 1rem;
-  width: 100%;
   border: 2px solid transparent;
   border-radius: 0.25rem;
+  &[type="color"] {
+    padding: 0;
+    height: 37.6px;
+    width: 37.6px;
+    cursor: pointer;
+    appearance: none;
+    overflow: hidden;
+    &::-webkit-color-swatch {
+      border: unset;
+    }
+    &::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+  }
 }
 
 ::-webkit-input-placeholder {

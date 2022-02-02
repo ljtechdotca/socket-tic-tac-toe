@@ -1,4 +1,4 @@
-✔ make rooms for broadcasting @done(22-01-26 22:12)
-
-✔ build a tic tac toe board @done(22-01-26 22:12)
-  - players take turns selecting a grid cell
+tictactoe logic
+  ✔ win conditions @done(22-01-29 20:56)
+  ✔ clear game board when players leave or win @done(22-01-29 21:23)
+  ✔ clear end state @done(22-01-29 21:34)

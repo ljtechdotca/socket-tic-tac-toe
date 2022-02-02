@@ -1,67 +1,18 @@
-import { ICell, IRoom, IUser } from "@types";
+import { IRoom, IUser } from "@types";
 import { NextApiRequest, NextApiResponse } from "next";
 import { Socket } from "socket.io";
-
 const express = require("express");
 const next = require("next");
+const { INIT_ROOMS } = require("./lib/constants/rooms");
+const { handleRooms } = require("./lib/helpers/handle-rooms");
+const { handleUsers } = require("./lib/helpers/handle-users");
 const port = 3000;
 const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
 let users: IUser[] = [];
-
-const INIT_BOARD: ICell[] = Array.from({ length: 9 }, (_, index) => {
-  return {
-    id: index,
-    value: "-",
-  };
-});
-
-let rooms: IRoom[] = [
-  {
-    id: "public",
-    users: [],
-    game: {
-      board: [...INIT_BOARD],
-      turn: 0,
-    },
-  },
-  {
-    id: "alpha",
-    users: [],
-    game: {
-      board: [...INIT_BOARD],
-      turn: 0,
-    },
-  },
-  {
-    id: "beta",
-    users: [],
-    game: {
-      board: [...INIT_BOARD],
-      turn: 0,
-    },
-  },
-];
-
-const createUser = (name: string, socket: Socket) => {
-  return { id: socket.id, name } as IUser;
-};
-
-const joinRoom = (room: string, socket: Socket, user: IUser) => {
-  socket.join(room);
-  const targetRoomIndex = rooms.findIndex(({ id }) => id === room);
-  rooms[targetRoomIndex].users.push(user);
-};
-
-const leaveRoom = (room: string, socket: Socket, user: IUser) => {
-  socket.leave(room);
-  const targetRoomIndex = rooms.findIndex(({ id }) => id === room);
-  rooms[targetRoomIndex].users = rooms[targetRoomIndex].users.filter(
-    ({ id }) => id !== user.id
-  );
-};
+let rooms: IRoom[] = [...INIT_ROOMS];
 
 app.prepare().then(() => {
   const expressApp = express();
@@ -71,62 +22,90 @@ app.prepare().then(() => {
   });
 
   const httpServer = expressApp.listen(port, () => {
-    console.log(
-      "\u001b[32m",
-      "✨ Server Ready:",
-      "\u001b[33m",
-      `http://localhost:${port}`
-    );
+    console.log("\u001b[32m", "✨ Server Ready:");
+    console.log("\u001b[33m", `http://localhost:${port}`);
   });
 
   const io = require("socket.io")(httpServer);
 
   io.on("connection", (socket: Socket) => {
-    // new user register
-    socket.on("register", async (name: string) => {
-      const user = createUser(name, socket);
-      joinRoom("public", socket, user);
-
-      socket.emit("register", user);
-      io.to("public").emit("users", users);
-      io.to("public").emit("rooms", rooms);
+    // sign in
+    socket.on("sign in", async ({ color, name }) => {
+      const user = { id: socket.id, color, name };
+      users = handleUsers("add", { socket, user, users });
+      io.emit("data", { rooms });
     });
-    // handle rooms
-    socket.on("join", async (room: string, user: IUser) => {
-      const targetRoomIndex = rooms.findIndex(({ id }) => id === room);
-      if (rooms[targetRoomIndex].users.length < 2) {
-        joinRoom(room, socket, user);
-        io.emit("users", users);
-        io.emit("rooms", rooms);
-        if (rooms[targetRoomIndex].users.length === 2) {
-          const players = await io.in(rooms[targetRoomIndex].id).fetchSockets();
-          players.forEach((socket: Socket) => {
-            socket.emit("start game", rooms[targetRoomIndex].game);
-          });
-        }
-      } else {
-        socket.emit("error", "This room is full!");
-      }
-    });
-    socket.on("leave", async (room: string, user: IUser) => {
-      const targetRoomIndex = rooms.findIndex(({ id }) => id === room);
-      if (room !== "public") {
-        const players = await io.in(rooms[targetRoomIndex].id).fetchSockets();
-        players.forEach((socket: Socket) => {
-          socket.emit("stop game", null);
+    // sign out
+    socket.on("sign out", ({ user }) => {
+      const index = rooms.findIndex(({ users }) =>
+        users.some(({ id }) => id === user.id)
+      );
+      if (index > -1) {
+        rooms = handleRooms("leave", {
+          socket,
+          room: rooms[index],
+          rooms,
+          user,
         });
-        leaveRoom(room, socket, user);
-        io.emit("users", users);
-        io.emit("rooms", rooms);
-      } else {
-        socket.emit("error", "Cannot leave public room.");
       }
+      users = handleUsers("remove", { socket, user, users });
+      io.emit("data", { rooms });
     });
-    // messages
-    socket.on("message", (message: string, user: IUser) => {
-      io.emit("message", `${user.name}: ${message}`);
+    // chat
+    socket.on("chat", ({ message, user }) => {
+      io.emit("chat", { message, user });
     });
-    // game
-    socket.on("cell", (cell: ICell, user: IUser) => {});
+    // join room
+    socket.on("join", ({ room, user }) => {
+      const index = rooms.findIndex(({ users }) =>
+        users.some(({ id }) => id === user.id)
+      );
+      if (index > -1) {
+        rooms = handleRooms("join", {
+          io,
+          socket,
+          room,
+          rooms: handleRooms("leave", {
+            io,
+            socket,
+            room: rooms[index],
+            rooms,
+            user,
+          }),
+          user,
+        });
+      } else {
+        rooms = handleRooms("join", {
+          io,
+          socket,
+          room,
+          rooms,
+          user,
+        });
+      }
+      io.emit("data", { rooms });
+    });
+    // leave room
+    socket.on("leave", ({ room, user }) => {
+      rooms = handleRooms("leave", {
+        io,
+        socket,
+        room,
+        rooms,
+        user,
+      });
+      io.emit("data", { rooms });
+    });
+    // handle game
+    socket.on("cell", ({ cell, room, user }) => {
+      handleRooms("cell", {
+        io,
+        socket,
+        room,
+        rooms,
+        user,
+        cell,
+      });
+    });
   });
 });

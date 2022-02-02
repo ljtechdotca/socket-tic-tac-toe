@@ -1,20 +1,32 @@
 .root {
   display: grid;
+  grid-gap: 1rem;
+  place-items: center center;
 }
 
 .container {
-  height: 12rem;
+  height: 18rem;
   place-items: center center;
-  width: 12rem;
+  width: 18rem;
   background-color: black;
   color: white;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.heading {
+  display: flex;
+  flex-direction: column;
+  row-gap: 0.5rem;
+  font-size: 1.5rem;
+}
+
 .cell {
-  width: 3rem;
-  height: 3rem;
+  background-color: unset;
+  border: 1px solid white;
+  font-size: 2rem;
+  width: 6rem;
+  height: 6rem;
   display: grid;
   place-items: center center;
 }

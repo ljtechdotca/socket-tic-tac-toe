@@ -1,5 +1,5 @@
 import { SocketContext } from "@lib/context";
-import { IMessage, IUser } from "@types";
+import { IChat, IUser } from "@types";
 import { useContext, useEffect, useState } from "react";
 import styles from "./Chat.module.scss";
 
@@ -10,24 +10,27 @@ export interface ChatProps {
 export const Chat = ({ user }: ChatProps) => {
   const { socket, setSocket } = useContext(SocketContext);
   const [message, setMessage] = useState("");
-  const [chat, setChat] = useState<IMessage[]>([]);
+  const [chat, setChat] = useState<IChat[]>([]);
 
+  // todo : limit amount of chat messages rendered
   useEffect(() => {
     if (socket) {
-      socket.on("message", (message) => {
-        const newChat = [...chat, message];
-        setChat(newChat);
+      socket.on("chat", ({ message, user }) => {
+        setChat((state) => [...state, { message, user }]);
       });
     }
-  });
+    return () => {
+      socket?.close;
+    };
+  }, [socket]);
 
   const handle = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const { message } = Object.fromEntries(
-      new FormData(event.target as HTMLFormElement)
-    );
     if (socket) {
-      socket.emit("message", message, user);
+      const { message } = Object.fromEntries(
+        new FormData(event.target as HTMLFormElement)
+      );
+      socket.emit("chat", { message, user });
       setMessage("");
     }
   };
@@ -35,13 +38,13 @@ export const Chat = ({ user }: ChatProps) => {
   return (
     <div className={styles.root}>
       <div className={styles.container}>
-        {chat.map((message, index) => (
+        {chat.map(({ message, user }, index) => (
           <div key={index} className={styles.message}>
-            {message}
+            <b style={{ color: user.color }}>{user.name}</b>
+            <span>{message}</span>
           </div>
         ))}
       </div>
-
       <form onSubmit={handle} className={styles.form}>
         <input
           id="message"
